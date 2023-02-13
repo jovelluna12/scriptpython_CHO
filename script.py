@@ -24,12 +24,17 @@ def save_to_db(client,tests):
     client_insert="INSERT INTO clients VALUES(%s, %s, %s, %s, %s, %s)"
     test_insert="INSERT INTO tests (ClientID, status,date,ServiceID) VALUES(%s, %s, %s, %s)"
     get_serviceID_query="SELECT ServiceID FROM services WHERE ServiceName = %s"
-    cursor.execute(client_insert, client)
+    print(client)
+    cursor.executemany(client_insert, client)
     test_list = [(test,) for test in tests]
-    for i, test in enumerate(tests):  
-        cursor.execute(get_serviceID_query,(tests,))
+
+    for i in range(len(tests)): 
+        print(tests[i])
+        cursor.execute(get_serviceID_query,(tests[i],))
         ServiceID=cursor.fetchall()
-        cursor.execute(test_insert,(client[0], "Pending", datetime.date.today(), ServiceID[0][0]))
+        print(client[0][0])
+        print(ServiceID[0][0])
+        cursor.execute(test_insert,(client[i][0], "Pending", datetime.date.today(), ServiceID[0][0]))
         db.commit()
 
     print("Data Extraction Success!")
@@ -65,14 +70,18 @@ re=requests.get(url=URL)
 print("Data Extracted, Compiling")
 data=re.json()
 
+client_list=[]
 for client in data['Tests']:
     client_id=generateID()
-    client_tuple=(client_id,client['name'],client['age'],client['gender'],client['birthdate'],client['address'])
+    client_tup=(client_id,client['name'],client['age'],client['gender'],client['birthdate'],client['address'])
+    client_list.append(client_tup)
 
+
+test_list=[]
 for test in data['Clients']:
-    test_tuple=(test['Service'])
+    test_list.append(test['Service'])
+test_tuple=tuple(test_list)
 
-
-save_to_db(client_tuple,test_tuple)
+save_to_db(client_list,test_tuple)
 
 
