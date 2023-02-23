@@ -23,20 +23,20 @@ def get_cursor(conn):
 def save_to_db(client,tests):
     client_insert="INSERT INTO clients VALUES(%s, %s, %s, %s, %s, %s)"
     test_insert="INSERT INTO tests (ClientID, status,date,ServiceID) VALUES(%s, %s, %s, %s)"
-    get_serviceID_query="SELECT ServiceID FROM services WHERE ServiceName = %s"
+    get_serviceID_query="SELECT ServiceID FROM services WHERE LOWER(ServiceName) = LOWER(%s)"
     print(client)
     cursor.executemany(client_insert, client)
     test_list = [(test,) for test in tests]
-
-    for i in range(len(tests)): 
-        print(tests[i])
-        cursor.execute(get_serviceID_query,(tests[i],))
-        ServiceID=cursor.fetchall()
+    print(test_list)
+    for i in range(len(test_list)): 
+        cursor.execute(get_serviceID_query,test_list[i])
+        print("executed query:", get_serviceID_query, "with parameters:", test_list[i][0])
+        ServiceID=cursor.fetchone()
         print(client[0][0])
-        print(ServiceID[0][0])
-        cursor.execute(test_insert,(client[i][0], "Pending", datetime.date.today(), ServiceID[0][0]))
-        db.commit()
-
+        print(ServiceID)
+        cursor.execute(test_insert,(client[0][0], "Pending", datetime.date.today(), ServiceID[0]))
+    
+    db.commit()
     print("Data Extraction Success!")
 
 
